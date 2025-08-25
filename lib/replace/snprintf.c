@@ -118,6 +118,17 @@
 #  include <math.h>
 #endif /* TEST_SNPRINTF */
 
+#ifndef VA_COPY
+#ifdef HAVE_VA_COPY
+#define VA_COPY(dest, src) va_copy(dest, src)
+#else
+#ifdef HAVE___VA_COPY
+#define VA_COPY(dest, src) __va_copy(dest, src)
+#else
+#define VA_COPY(dest, src) (dest) = (src)
+#endif
+#endif
+
 #if defined(HAVE_SNPRINTF) && defined(HAVE_VSNPRINTF) && defined(HAVE_C99_VSNPRINTF)
 /* only include stdio.h if we are not re-defining snprintf or vsnprintf */
 #include <stdio.h>
@@ -141,16 +152,6 @@
 #define LLONG long
 #endif
 
-#ifndef VA_COPY
-#ifdef HAVE_VA_COPY
-#define VA_COPY(dest, src) va_copy(dest, src)
-#else
-#ifdef HAVE___VA_COPY
-#define VA_COPY(dest, src) __va_copy(dest, src)
-#else
-#define VA_COPY(dest, src) (dest) = (src)
-#endif
-#endif
 
 /*
  * dopr(): poor man's version of doprintf

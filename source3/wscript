@@ -1691,7 +1691,11 @@ main() {
         conf.DEFINE('WITH_SPOTLIGHT', '1')
         conf.env.with_spotlight = True
 
+#ifndef __QNXNTO__
     conf.CHECK_HEADERS('rpc/xdr.h', lib='tirpc')
+#else
+    conf.CHECK_HEADERS('rpc/types.h rpc/xdr.h', together=True, lib='tirpc')
+#endif
 
     if conf.CHECK_FUNCS_IN('nscd_flush_cache', 'nscd', headers='libnscd.h'):
         conf.DEFINE('HAVE_NSCD_FLUSH_CACHE', '1')

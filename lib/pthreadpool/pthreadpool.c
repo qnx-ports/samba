@@ -347,14 +347,26 @@ static void pthreadpool_child(void)
 		ret = pthread_cond_init(&pool->condvar, NULL);
 		assert(ret == 0);
 
+#ifdef __QNXNTO__
+		ret = pthread_mutex_init(&pool->mutex, NULL);
+#else
 		ret = pthread_mutex_unlock(&pool->mutex);
+#endif
 		assert(ret == 0);
 
+#ifdef __QNXNTO__
+		ret = pthread_mutex_init(&pool->fork_mutex, NULL);
+#else
 		ret = pthread_mutex_unlock(&pool->fork_mutex);
+#endif
 		assert(ret == 0);
 	}
 
+#ifdef __QNXNTO__
+	ret = pthread_mutex_init(&pthreadpools_mutex, NULL);
+#else
 	ret = pthread_mutex_unlock(&pthreadpools_mutex);
+#endif
 	assert(ret == 0);
 }
 

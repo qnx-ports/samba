@@ -1056,3 +1056,160 @@ const char *rep_getprogname(void)
 #endif /* HAVE_PROGRAM_INVOCATION_SHORT_NAME */
 }
 #endif /* HAVE_GETPROGNAME */
+
+
+#ifndef HAVE_GETDELIM
+#ifdef __QNXNTO__
+#include <limits.h>
+#include <lib/compat.h>
+#include <sys/types.h>
+
+_C_LIB_DECL
+
+/* filched from xstdio.h - not visible here */
+#ifndef _MERR
+#define _MERR 0x200
+#endif /* _MERR */
+
+/**
+ * Increases the size of the given buffer.
+ * If the current size is greater than 0, the function attempts to double the
+ * size to avoid excessive calls to realloc(). If that doesn't work, the
+ * function will repeatedly try smaller increments.
+ * @param   buf     The buffer to expand
+ * @param   lenp    Holds the current size of the buffer and updated to the new
+ *                  size upon return
+ * @return  The expanded buffer if successful, NULL otherwise
+ */
+static void *
+expand(void * const buf, size_t * const lenp)
+{
+    void            *newbuf;
+    size_t const    len = *lenp;
+    size_t          leninc = (len == 0) ? 64 : len;
+
+    for (;;) {
+        newbuf = realloc(buf, len + leninc);
+        if (newbuf != NULL) {
+            break;
+        }
+
+        if (leninc == 1) {
+            break;
+        }
+
+        leninc >>= 1;
+    }
+
+    *lenp = len + leninc;
+    return newbuf;
+}
+
+/**
+ * Reads characters from a string until either the given delimiter character is
+ * found or the end of the stream is reached.
+ * @param   lineptr     Pointer to an initial buffer allocated with malloc(), or
+ *                      a pointer to NULL. Upon return holds the buffer
+ *                      allocated by the function to store the characters.
+ * @param   lenptr      Holds the current size of the buffer, if *lineptr is not
+ *                      NULL. Holds the size of the allocated buffer upon
+ *                      return.
+ * @param   delimiter   A character that terminates reading from the stream
+ * @param   stream      The stream to read from
+ * @return  The number of characters read if successful, -1 otherwise
+ */
+ssize_t
+rep_getdelim( char ** const lineptr, size_t * const lenptr, int const delimiter, FILE * const stream)
+{
+    // Pointless check for NULL mandated by POSIX.
+    if ((lineptr == NULL) || (lenptr == NULL)) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    char    *buf = *lineptr;
+    size_t  maxlen = (buf == NULL) ? 0 : *lenptr;
+    size_t  len = 0;
+    int     ch = EOF;
+    ssize_t rc = -1;
+
+   // _Lockfileatomic(stream);
+
+    for (;;) {
+        // Get the next character.
+        if (ch != delimiter) {
+            // Defensive coding, unlikely to ever happen in practice.
+            if (len == SSIZE_MAX) {
+                errno = EOVERFLOW;
+                break;
+            }
+
+            ch = fgetc(stream);
+        } else {
+            ch = '\0';
+        }
+
+        if (ch == EOF) {
+            // End of file or error. Determine which one.
+            if (stream->_Mode & _MERR) {
+                break;
+            }
+
+            if (len == 0) {
+                break;
+            }
+
+            // EOF encountered after some characters were read. Proceed to add a
+            // NUL terminator.
+            ch = '\0';
+        }
+
+        // Check if the new character can be added to the buffer. If not, try to
+        // expand the buffer.
+        if (len == maxlen) {
+            char * const  newbuf = expand(buf, &maxlen);
+            if (newbuf == NULL) {
+                errno = ENOMEM;
+                break;
+            }
+
+            buf = newbuf;
+        }
+
+        // Add the new character to the buffer.
+        buf[len] = (char)ch;
+
+        if (ch == '\0') {
+            rc = (ssize_t)len;
+            break;
+        }
+
+        len++;
+    }
+
+    if (rc != -1) {
+        *lineptr = buf;
+        *lenptr = maxlen;
+    } else {
+        // Free the buffer if allocated by this function.
+        if (*lineptr == NULL) {
+            free(buf);
+        }
+    }
+
+    //_Unlockfileatomic(stream);
+
+    return rc;
+
+}
+#endif /* __QNXNTO__ */
+#endif /* HAVE_GETDELIM */
+
+#ifndef HAVE_GETLINE
+#ifdef __QNXNTO__
+ssize_t getline( char ** const lineptr, size_t * const lenptr, FILE * const stream)
+{
+    return getdelim(lineptr, lenptr, '\n', stream);
+}
+#endif /* __QNXNTO__ */
+#endif /* HAVE_GETLINE */

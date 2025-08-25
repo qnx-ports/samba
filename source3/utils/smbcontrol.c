@@ -1564,7 +1564,11 @@ static void usage(poptContext pc)
 
 	for (i = 0; msg_types[i].name; i++) 
 	    fprintf(stderr, "\t%-30s%s\n", msg_types[i].name, 
+#ifndef __QNXNTO__
 		    msg_types[i].help);
+#else
+		    msg_types[i].help ? msg_types[i].help : "");
+#endif
 
 	fprintf(stderr, "\n");
 

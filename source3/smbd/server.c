@@ -1527,6 +1527,10 @@ static NTSTATUS smbd_claim_version(struct messaging_context *msg,
    prototype generation system is too complicated. */
 
 extern void build_options(bool screen);
+#ifdef __QNXNTO__
+/* don't SIGSEGV if printf gets passed a NULL ptr for a %s - emulate glibc */
+extern const char *output_for_percent_s_NULL = "(null)";
+#endif // __QNXNTO__
 
  int main(int argc,const char *argv[])
 {

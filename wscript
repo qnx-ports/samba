@@ -310,7 +310,9 @@ def configure(conf):
     if conf.env.with_ctdb:
         conf.RECURSE('ctdb')
     conf.RECURSE('lib/socket')
+#ifndef __QNXNTO__
     conf.RECURSE('lib/mscat')
+#endif
     conf.RECURSE('packaging')
 
     conf.SAMBA_CHECK_UNDEFINED_SYMBOL_FLAGS()
@@ -319,9 +321,9 @@ def configure(conf):
     # strict as the strictest OS we support, so adding this here
     # allows us to find problems on our development hosts faster.
     # It also results in faster load time.
-
+#ifndef __QNXNTO__
     conf.env.asneeded_ldflags = conf.ADD_LDFLAGS('-Wl,--as-needed', testflags=True)
-
+#endif
     if not conf.CHECK_NEED_LC("-lc not needed"):
         conf.ADD_LDFLAGS('-lc', testflags=False)
 

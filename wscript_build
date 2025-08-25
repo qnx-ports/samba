@@ -94,7 +94,9 @@ bld.RECURSE('source4/nbt_server')
 bld.RECURSE('source4/wrepl_server')
 bld.RECURSE('source4/cldap_server')
 bld.RECURSE('source4/ntp_signd')
+#ifndef __QNXNTO__
 bld.RECURSE('source4/utils/oLschema2ldif')
+#endif
 bld.RECURSE('source4/ntvfs')
 bld.RECURSE('source4/torture')
 bld.RECURSE('librpc')
@@ -117,7 +119,9 @@ bld.RECURSE('libcli/echo')
 bld.RECURSE('libcli/dns')
 bld.RECURSE('libcli/samsync')
 bld.RECURSE('libcli/registry')
+#ifndef __QNXNTO__
 bld.RECURSE('lib/mscat')
+#endif
 bld.RECURSE('source4/lib/policy')
 bld.RECURSE('libcli/named_pipe_auth')
 if bld.CONFIG_GET('ENABLE_SELFTEST'):

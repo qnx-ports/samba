@@ -229,6 +229,18 @@ def symlink_bin(self):
     binpath = self.link_task.outputs[0].abspath(self.env)
     bldpath = os.path.join(self.bld.env.BUILD_DIRECTORY, self.link_task.outputs[0].name)
 
+    #print(f"symlink_bin {self.target}")
+    NATIVE_NAMES=["asn1_compile", "compile_et"]
+    if self.target in NATIVE_NAMES:
+        native_prefix=os.getenv("NATIVE_HEIMDAL_PATH")
+        if not native_prefix:
+            print(f"!!!!!\n\t WARNING: FIXED UP PATH TO NATIVE {self.target} IS NOT AVAILABLE")
+        else:
+            binpath = os.path.join(native_prefix, self.target)
+
+    print(f"symlink_bin ({binpath}, {bldpath}")
+
+
     if os.path.lexists(bldpath):
         if os.path.islink(bldpath) and os.readlink(bldpath) == binpath:
             return

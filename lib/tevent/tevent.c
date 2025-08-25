@@ -257,25 +257,46 @@ static void tevent_atfork_child(void)
 		     tctx = DLIST_PREV(tctx)) {
 			tctx->event_ctx = NULL;
 
+#ifndef __QNXNTO__
 			ret = pthread_mutex_unlock(&tctx->event_ctx_mutex);
 			if (ret != 0) {
-				tevent_abort(
-					ev, "pthread_mutex_unlock failed");
+				tevent_abort( ev, "pthread_mutex_unlock failed");
 			}
+#else
+			ret = pthread_mutex_init(&tctx->event_ctx_mutex, NULL);
+			if (ret != 0) {
+				tevent_abort( ev, "pthread_mutex_(re)init failed");
+			}
+#endif /* __QNXNTO__ */
 		}
 
 		ev->threaded_contexts = NULL;
 
+#ifndef __QNXNTO__
 		ret = pthread_mutex_unlock(&ev->scheduled_mutex);
 		if (ret != 0) {
 			tevent_abort(ev, "pthread_mutex_unlock failed");
 		}
+#else
+		ret = pthread_mutex_init(&ev->scheduled_mutex, NULL);
+		if (ret != 0) {
+			tevent_abort(ev, "pthread_mutex_(re)init failed");
+		}
+#endif /* __QNXNTO__ */
 	}
 
+#ifndef __QNXNTO__
 	ret = pthread_mutex_unlock(&tevent_contexts_mutex);
 	if (ret != 0) {
 		abort();
 	}
+#else
+	ret = pthread_mutex_init(&tevent_contexts_mutex, NULL);
+	if (ret != 0) {
+		tevent_abort(ev, "pthread_mutex_(re)init failed");
+		abort();
+	}
+#endif /* __QNXNTO__ */
 }
 
 static void tevent_prep_atfork(void)

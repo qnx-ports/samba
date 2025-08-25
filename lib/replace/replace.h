@@ -954,6 +954,17 @@ int rep_memset_s(void *dest, size_t destsz, int ch, size_t count);
 #define getprogname rep_getprogname
 const char *rep_getprogname(void);
 #endif
+#ifdef __QNXNTO__
+#ifndef HAVE_GETDELIM
+#define getdelim rep_getdelim
+ssize_t rep_getdelim(char ** const lineptr, size_t * const lenptr, int const delimiter, FILE * const stream);
+#endif
+
+#ifndef HAVE_GETLINE
+#define getline rep_getline
+ssize_t rep_getline( char ** const lineptr, size_t * const lenptr, FILE * const stream);
+#endif
+#endif
 
 #ifndef FALL_THROUGH
 # ifdef HAVE_FALLTHROUGH_ATTRIBUTE

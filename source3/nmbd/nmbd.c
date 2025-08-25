@@ -765,6 +765,10 @@ static bool open_sockets(bool isdaemon, int port)
 	return( True );
 }
 
+#ifdef __QNXNTO__
+/* don't SIGSEGV if printf gets passed a NULL ptr for a %s - emulate glibc */
+extern const char *output_for_percent_s_NULL = "(null)";
+#endif // __QNXNTO__
 /**************************************************************************** **
  main program
  **************************************************************************** */

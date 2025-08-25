@@ -597,7 +597,11 @@ static NTSTATUS gensec_spnego_client_negTokenInit_step(
 		DBG_PREFIX(dbg_level, (
 			   "%s: creating NEG_TOKEN_INIT for %s failed "
 			   "(next[%s]): %s\n", cur_sec->op->name,
-			   principal, next, nt_errstr(status)));
+			   principal, next
+#ifdef __QNXNTO__
+			   ? next : "(null)"
+#endif /* __QNXNTO__ */
+			   , nt_errstr(status)));
 
 		if (next == NULL) {
 			/*
